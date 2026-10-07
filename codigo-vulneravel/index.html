@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OS Manutenção — VULNERÁVEL</title>
+  <!--
+    ================================================================
+    VERSÃO INTENCIONALMENTE VULNERÁVEL A XSS
+    Instituto Federal de Brasília — Segurança em Aplicações 2026/1
+    Sprint 2 — Artefato XSS
+
+    NÃO usa sanitização, NÃO usa CSP, usa innerHTML em vez de
+    textContent. Esse é o requisito do laboratório.
+    ================================================================
+  -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topo">
+    <h1>🔧 OficinaTech — Ordens de Serviço</h1>
+    <span class="selo selo-perigo">MODO VULNERÁVEL</span>
+
+    <!-- Campo de pesquisa: ponto de REFLECTED XSS -->
+    <form id="form-busca" class="barra-busca" autocomplete="off">
+      <input type="text" id="busca" placeholder="Pesquisar por cliente, equipamento ou defeito...">
+      <button type="submit">Pesquisar</button>
+    </form>
+    <!-- O resultado da busca é refletido aqui, sem escapar -->
+    <p id="resultado-busca" class="resultado-busca"></p>
+  </header>
+
+  <main>
+    <!-- Formulário de abertura de OS: ponto de STORED XSS -->
+    <section class="painel">
+      <h2>Abrir nova OS</h2>
+      <form id="form-os" class="form-os" autocomplete="off">
+        <input type="text" id="cliente" placeholder="Cliente" required>
+        <input type="text" id="equipamento" placeholder="Equipamento" required>
+        <input type="date" id="data" required>
+        <input type="text" id="defeito" placeholder="Defeito relatado" required>
+        <textarea id="descricao" placeholder="Descrição do serviço" rows="2" required></textarea>
+        <button type="submit">Registrar OS</button>
+      </form>
+    </section>
+
+    <!-- Os cards das ordens são renderizados aqui -->
+    <section id="lista-os" class="grade-cards"></section>
+  </main>
+
+  <!-- Modal de detalhes -->
+  <div id="modal" class="modal oculto">
+    <div class="modal-caixa">
+      <button id="fechar-modal" class="fechar">×</button>
+      <div id="modal-conteudo"></div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
