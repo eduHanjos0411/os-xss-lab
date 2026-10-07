@@ -161,20 +161,29 @@ document.getElementById('fechar-modal').addEventListener('click', () => {
    Busca — segura.
    O termo vai para textContent; o navegador o trata como texto.
 ---------------------------------------------------------------- */
-document.getElementById('form-busca').addEventListener('submit', (e) => {
-  e.preventDefault();
-  termoAtivo = document.getElementById('busca').value;
+function exibirBusca(termo) {
+  termoAtivo = termo;
   paginaAtual = 1;
 
   const alvo = document.getElementById('resultado-busca');
   alvo.textContent = '';                         // limpa
   alvo.append('Exibindo resultados para: ');
   const forte = document.createElement('strong');
-  forte.textContent = termoAtivo;                // seguro
+  forte.textContent = termo;                     // seguro: tratado como texto
   alvo.append(forte);
 
   renderizarCards();
+}
+
+// Mesmo fluxo da versão vulnerável (query string ?busca=...), mas o
+// termo é escrito com textContent: um payload aparece como texto literal.
+document.getElementById('form-busca').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const termo = document.getElementById('busca').value;
+  location.search = '?busca=' + encodeURIComponent(termo);
 });
+
+const termoURL = new URLSearchParams(location.search).get('busca');
 
 /* ----------------------------------------------------------------
    Abertura de OS — mesma lógica, armazenamento próprio.
@@ -195,4 +204,11 @@ document.getElementById('form-os').addEventListener('submit', (e) => {
   renderizarCards();
 });
 
-renderizarCards();
+// Render inicial: se veio ?busca=... na URL, aplicamos o termo (mas de
+// forma segura, via textContent); senão, mostramos todas as ordens.
+if (termoURL !== null) {
+  document.getElementById('busca').value = termoURL;
+  exibirBusca(termoURL);
+} else {
+  renderizarCards();
+}
