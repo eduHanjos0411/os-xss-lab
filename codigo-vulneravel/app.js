@@ -11,6 +11,17 @@
 
 const CHAVE = 'os_vuln';
 
+/* ----------------------------------------------------------------
+   COOKIE DE SESSÃO (apenas para a demonstração)
+   ----------------------------------------------------------------
+   Cria um cookie fake para que o payload alert(document.cookie)
+   tenha o que exibir. Num sistema real seria o cookie de sessão
+   que o atacante tentaria roubar.
+---------------------------------------------------------------- */
+if (!document.cookie.includes('sessao=')) {
+  document.cookie = 'sessao=abc123-token-fake; path=/';
+}
+
 // Dados de exemplo (seed) — carregados só na primeira vez.
 const SEED = [
   {
@@ -121,11 +132,11 @@ document.getElementById('fechar-modal').addEventListener('click', () => {
    via innerHTML, sem escapar. Digitar um payload no campo e
    pesquisar já dispara a execução.
 ---------------------------------------------------------------- */
-document.getElementById('form-busca').addEventListener('submit', (e) => {
-  e.preventDefault();
-  const termo = document.getElementById('busca').value;
-
+function exibirBusca(termo) {
   // >>> PONTO VULNERÁVEL <<<
+  // O termo vindo da URL (?busca=...) é refletido via innerHTML, sem
+  // escapar. Um link ?busca=<img src=x onerror=...> dispara na vítima
+  // que apenas ABRE o link — é o que caracteriza o REFLECTED XSS.
   document.getElementById('resultado-busca').innerHTML =
     'Exibindo resultados para: <strong>' + termo + '</strong>';
 
@@ -134,7 +145,18 @@ document.getElementById('form-busca').addEventListener('submit', (e) => {
       .includes(termo.toLowerCase())
   );
   renderizarCards(filtradas);
+}
+
+// Ao pesquisar, jogamos o termo na query string e recarregamos: assim
+// o fluxo é idêntico ao de um link malicioso ?busca=... compartilhado.
+document.getElementById('form-busca').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const termo = document.getElementById('busca').value;
+  location.search = '?busca=' + encodeURIComponent(termo);
 });
+
+// Ao carregar a página, lemos ?busca=... da URL e refletimos.
+const termoURL = new URLSearchParams(location.search).get('busca');
 
 /* ----------------------------------------------------------------
    ABERTURA DE OS  (alimenta o STORED XSS)
@@ -156,5 +178,11 @@ document.getElementById('form-os').addEventListener('submit', (e) => {
   renderizarCards(ordens);
 });
 
-// Render inicial
-renderizarCards(ordens);
+// Render inicial: se veio ?busca=... na URL, refletimos (REFLECTED XSS);
+// senão, mostramos todas as ordens.
+if (termoURL !== null) {
+  document.getElementById('busca').value = termoURL;
+  exibirBusca(termoURL);
+} else {
+  renderizarCards(ordens);
+}
