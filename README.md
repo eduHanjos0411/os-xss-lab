@@ -91,10 +91,7 @@ já executa o script, sem nada ficar persistido no servidor.
 
 ---
 
-## Parte 2 — Como explorar (payloads para o vídeo)
-
-> Use **somente** neste laboratório. Fora dele, acesso não autorizado é crime
-> (Art. 154-A, Lei 12.737/2012), como diz o roteiro.
+## Parte 2 — Como explorar
 
 **Stored XSS** — registre uma OS e, no campo **Defeito** ou **Descrição**, use:
 
@@ -181,33 +178,3 @@ Repita os **mesmos payloads** da Parte 2 na versão segura:
 Se o navegador **mostra o script como texto em vez de executá-lo**, a correção
 está funcionando — exatamente o critério do guia.
 
----
-
-## Roteiro sugerido para o vídeo (3–5 min)
-
-1. Mostrar a app funcionando normalmente (abrir uma OS, ver detalhes). *(antes)*
-2. **Reflected**: colar o payload na busca → `alert`. *(durante)*
-3. **Stored**: registrar OS com payload no defeito → `alert` no card; dar F5
-   para provar que ficou salvo. *(resultado)*
-4. Explicar em uma frase a causa: `innerHTML` interpretando dado cru.
-5. Abrir a versão segura (mesmo domínio), repetir os dois payloads → **nada
-   executa**, o texto aparece literal.
-6. Mostrar no código: `textContent` nos cards, `escaparHTML()` no modal, a CSP
-   no `<head>`. Fechar com a lição: *contexto define a defesa*.
-
----
-
-## Estrutura
-
-```
-os-xss-lab/
-├── README.md
-├── codigo-vulneravel/
-│   ├── index.html
-│   ├── style.css
-│   └── app.js
-└── codigo-corrigido/
-    ├── index.html
-    ├── style.css
-    └── app.js
-```
